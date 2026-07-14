@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>opencode-mobile</Name>
-  <Repository>opencode-mobile:latest</Repository>
-  <Registry/>
+  <Repository>ghcr.io/emenblade/opencode-mobile:latest</Repository>
+  <Registry>https://github.com/emenblade/undraidopencode/pkgs/container/opencode-mobile</Registry>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
   <Support>https://github.com/emenblade/undraidopencode</Support>
   <Project>https://opencode.ai</Project>
-  <Overview>Runs opencode (open-source AI coding agent CLI) with its built-in web UI, so you can drive it from a phone browser over WireGuard. This image is not published to a registry - build it locally first via SSH: cd to where you placed this project's Dockerfile, then `docker build -t opencode-mobile:latest .` Do not expose the WebUI port to the internet; access it via WireGuard VPN into your LAN.</Overview>
+  <Overview>Runs opencode (open-source AI coding agent CLI) with its built-in web UI, so you can drive it from a phone browser over WireGuard. Image is built and published automatically by GitHub Actions on every change plus a daily rebuild. Do not expose the WebUI port to the internet; access it via WireGuard VPN into your LAN.</Overview>
   <Category>Tools: Productivity:</Category>
   <WebUI>http://[IP]:[PORT:4096]/</WebUI>
   <TemplateURL/>
@@ -18,7 +18,7 @@
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Requires>Build the image locally first (docker build -t opencode-mobile:latest .) - this is not pulled from a registry.</Requires>
+  <Requires/>
   <Config Name="WebUI Port" Target="4096" Default="4096" Mode="tcp" Description="Port for the opencode web UI" Type="Port" Display="always" Required="true" Mask="false">4096</Config>
   <Config Name="Workspace" Target="/workspace" Default="/mnt/user/projects" Mode="rw" Description="Code/files opencode operates on" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/projects</Config>
   <Config Name="Config" Target="/home/opencode/.config" Default="/mnt/user/appdata/opencode-mobile/config" Mode="rw" Description="opencode config and provider credentials (persisted, covered by CA Backup)" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/opencode-mobile/config</Config>

@@ -1,7 +1,7 @@
 services:
   opencode:
-    build: .
-    image: opencode-mobile:latest
+    image: ghcr.io/emenblade/opencode-mobile:latest
+    build: .  # only used if you run `docker compose up --build` for local changes
     container_name: opencode-mobile
     restart: unless-stopped
     environment:

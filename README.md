@@ -19,14 +19,43 @@ This setup assumes you're deploying to **Unraid** and reaching it by
 public-facing reverse proxy here. Once you're on the VPN, your phone can just
 reach the Unraid box directly like any other LAN device.
 
-## Deploying on Unraid
+## How the image gets built
+
+`.github/workflows/publish.yml` builds this Dockerfile and pushes it to
+`ghcr.io/emenblade/opencode-mobile` on every push to `main`, on a daily
+schedule (to pick up new `opencode-ai` releases even when nothing here
+changes), and on manual trigger from the Actions tab. Unraid then just pulls
+`:latest` — no build step, no Node/npm toolchain needed on the NAS at all.
+
+**One-time manual step required:** GitHub Container Registry publishes new
+packages as *private* by default, even from a public repo, and there's no
+way to flip that from the workflow itself (it needs a package-admin action,
+not just `packages: write`). After the workflow runs once:
+
+1. Go to your GitHub profile → **Packages** → `opencode-mobile`.
+2. **Package settings** → **Danger Zone** → **Change visibility** → Public.
+3. While there, under "Manage Actions access" / repo connection, link it to
+   `emenblade/undraidopencode` so it shows up on the repo page too.
+
+Without this, Unraid's pull will fail with a 403/denied error since it has
+no registry credentials configured. (Alternative if you'd rather keep it
+private: add a GHCR login under Unraid's Docker settings using a PAT with
+`read:packages` — but public is simpler for a non-sensitive image like
+this.)
+
+To test the workflow before merging this branch to `main`, trigger it
+manually: **Actions tab → Build and publish image → Run workflow**.
+
+## Deploying on Unraid (docker compose)
 
 1. Put this project somewhere on your array, e.g.:
    ```
    /mnt/user/appdata/opencode-mobile/
    ```
    (Copy the repo there, or `git clone` it if Unraid has git available — an
-   SCP/rsync from your regular machine works too.)
+   SCP/rsync from your regular machine works too. You only strictly need
+   `docker-compose.yml` and `.env` since the image is pulled, not built, but
+   keeping the whole repo is simpler to manage.)
 
 2. SSH into Unraid and from that directory:
    ```bash
@@ -36,7 +65,8 @@ reach the Unraid box directly like any other LAN device.
    # e.g. APPDATA_PATH=/mnt/user/appdata/opencode-mobile/data
    #      WORKSPACE_PATH=/mnt/user/projects   (wherever your code actually lives)
 
-   docker compose up -d --build
+   docker compose pull
+   docker compose up -d
    ```
    Unraid 6.12+ ships the `docker compose` CLI plugin by default. If you'd
    rather manage this from the GUI instead of SSH, install **Docker Compose
@@ -46,15 +76,8 @@ reach the Unraid box directly like any other LAN device.
 ### Alternative: native Unraid Docker template (no compose)
 
 `unraid-template.xml` lets you add this as a regular container from the
-Docker tab's "Add Container" screen instead of using compose. Since this
-image isn't published to a registry, you still build it locally first:
-
-```bash
-cd /mnt/user/appdata/opencode-mobile   # wherever you placed the repo
-docker build -t opencode-mobile:latest .
-```
-
-Then make Unraid aware of the template:
+Docker tab's "Add Container" screen instead of using compose, pulling
+straight from `ghcr.io/emenblade/opencode-mobile:latest`:
 
 ```bash
 cp unraid-template.xml /boot/config/plugins/dockerMan/templates-user/opencode-mobile.xml
@@ -64,13 +87,12 @@ Go to **Docker → Add Container**, pick `opencode-mobile` from the template
 dropdown, and fill in the Server Password field (everything else has sane
 Unraid-style defaults: `/mnt/user/projects` for the workspace,
 `/mnt/user/appdata/opencode-mobile/{config,data}` for persisted state, port
-4096). Apply, then rerun `opencode auth login` via `docker exec` as below.
+4096). Apply, then run `opencode auth login` via `docker exec` as below.
 
-Rebuilding after a `git pull` (`docker build -t opencode-mobile:latest .`
-again) and clicking the container's Unraid icon → "Force Update" picks up
-the new image without touching your template config. Unraid's "check for
-updates" against a registry won't work for this image since it's local-only
-— ignore any update-check errors for it.
+For fully hands-off updates, install **Auto Update Applications** (by
+Squid) from Community Applications and enable it for this container —
+Unraid will then periodically check GHCR for a new digest, pull it, and
+restart the container on its own, in step with the daily CI rebuild.
 
 3. **Do not port-forward 4096 on your router.** The whole point of the
    WireGuard setup is that this stays LAN-only and reachable only once
@@ -88,7 +110,7 @@ docker exec -it opencode-mobile opencode auth login
 This is a normal opencode login flow (API key or device-code OAuth) — if it
 prints a URL, you can open that URL on any device, it doesn't have to be the
 same machine. Credentials land under `$APPDATA_PATH/config`, so they persist
-across container restarts/rebuilds and get swept up in appdata backups.
+across container restarts/updates and get swept up in appdata backups.
 
 ## Using it from your phone
 
@@ -117,6 +139,7 @@ across container restarts/rebuilds and get swept up in appdata backups.
 - opencode's agent can execute shell commands against whatever is mounted at
   `/workspace`, so treat access to this container like SSH access to that
   data.
-- To pin a specific opencode version instead of always tracking latest, edit
-  the `npm install -g opencode-ai@latest` line in the `Dockerfile`, then
-  `docker compose build`.
+- Every image is also tagged with its commit, e.g.
+  `ghcr.io/emenblade/opencode-mobile:sha-<commit>`. To pin instead of
+  tracking `latest`, use one of those tags in `docker-compose.yml` (or the
+  template's Repository field) and disable auto-update for this container.
