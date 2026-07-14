@@ -43,6 +43,35 @@ reach the Unraid box directly like any other LAN device.
    Manager** (by ich777) from Community Applications and paste these compose
    files in there instead.
 
+### Alternative: native Unraid Docker template (no compose)
+
+`unraid-template.xml` lets you add this as a regular container from the
+Docker tab's "Add Container" screen instead of using compose. Since this
+image isn't published to a registry, you still build it locally first:
+
+```bash
+cd /mnt/user/appdata/opencode-mobile   # wherever you placed the repo
+docker build -t opencode-mobile:latest .
+```
+
+Then make Unraid aware of the template:
+
+```bash
+cp unraid-template.xml /boot/config/plugins/dockerMan/templates-user/opencode-mobile.xml
+```
+
+Go to **Docker → Add Container**, pick `opencode-mobile` from the template
+dropdown, and fill in the Server Password field (everything else has sane
+Unraid-style defaults: `/mnt/user/projects` for the workspace,
+`/mnt/user/appdata/opencode-mobile/{config,data}` for persisted state, port
+4096). Apply, then rerun `opencode auth login` via `docker exec` as below.
+
+Rebuilding after a `git pull` (`docker build -t opencode-mobile:latest .`
+again) and clicking the container's Unraid icon → "Force Update" picks up
+the new image without touching your template config. Unraid's "check for
+updates" against a registry won't work for this image since it's local-only
+— ignore any update-check errors for it.
+
 3. **Do not port-forward 4096 on your router.** The whole point of the
    WireGuard setup is that this stays LAN-only and reachable only once
    you're on the VPN.
