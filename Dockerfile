@@ -17,14 +17,18 @@ RUN useradd --create-home --shell /bin/bash opencode \
     && mkdir -p /workspace \
     && chown -R opencode:opencode /workspace /home/opencode
 
-USER opencode
 WORKDIR /workspace
 
 ENV HOME=/home/opencode \
     XDG_CONFIG_HOME=/home/opencode/.config \
     XDG_DATA_HOME=/home/opencode/.local/share
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 4096
 
-ENTRYPOINT ["/usr/bin/tini", "--"]
+# Starts as root so entrypoint.sh can fix bind-mount ownership, then drops
+# to the non-root opencode user via runuser before actually running anything.
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
 CMD ["opencode", "serve", "--hostname", "0.0.0.0", "--port", "4096"]

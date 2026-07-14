@@ -104,8 +104,13 @@ opencode needs credentials for whichever model provider you use (Anthropic,
 OpenAI, a Claude subscription, etc.). Run this once, interactively:
 
 ```bash
-docker exec -it opencode-mobile opencode auth login
+docker exec -it -u opencode opencode-mobile opencode auth login
 ```
+
+The `-u opencode` matters: the container itself starts as root (so the
+entrypoint can fix bind-mount ownership on first run — see Notes below),
+so a plain `docker exec` without `-u` would default to root and leave
+files it creates owned by the wrong user.
 
 This is a normal opencode login flow (API key or device-code OAuth) — if it
 prints a URL, you can open that URL on any device, it doesn't have to be the
@@ -132,7 +137,13 @@ across container restarts/updates and get swept up in appdata backups.
 
 ## Notes
 
-- The container runs as a non-root `opencode` user.
+- The actual opencode process runs as a non-root `opencode` user. The
+  container's entrypoint starts as root just long enough to fix ownership
+  on `$APPDATA_PATH/{config,data}` (Docker/Unraid auto-create missing
+  bind-mount host directories as root, which would otherwise block a
+  non-root process from writing into them) and on the `/workspace` mount
+  point itself, then drops privileges before running anything else. This
+  is automatic — no manual `chown` needed on the host side.
 - `OPENCODE_SERVER_PASSWORD` enables HTTP Basic Auth on the server. Keep it
   set even though WireGuard already gates access — it's cheap defense in
   depth against anything else on your LAN.
