@@ -15,11 +15,19 @@ RUN npm install -g opencode-ai@latest && npm cache clean --force
 
 RUN useradd --create-home --shell /bin/bash opencode \
     && mkdir -p /workspace \
+    && install -d -o opencode -g opencode /home/opencode/.config/opencode \
+    && install -d -o opencode -g opencode /home/opencode/.local/share/opencode \
+    && install -d -o opencode -g opencode /home/opencode/.local/state/opencode \
+    && install -d -o opencode -g opencode /home/opencode/.cache/opencode \
     && chown -R opencode:opencode /workspace /home/opencode
 
 WORKDIR /workspace
 
-ENV HOME=/home/opencode
+ENV HOME=/home/opencode \
+    XDG_CONFIG_HOME=/home/opencode/.config \
+    XDG_DATA_HOME=/home/opencode/.local/share \
+    XDG_STATE_HOME=/home/opencode/.local/state \
+    XDG_CACHE_HOME=/home/opencode/.cache
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

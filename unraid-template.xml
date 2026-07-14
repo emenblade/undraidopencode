@@ -25,4 +25,5 @@
   <Config Name="Server Password" Target="OPENCODE_SERVER_PASSWORD" Default="" Mode="" Description="HTTP Basic Auth password for the web UI - generate with: openssl rand -base64 24" Type="Variable" Display="always" Required="true" Mask="true"></Config>
   <Config Name="Server Username" Target="OPENCODE_SERVER_USERNAME" Default="opencode" Mode="" Description="HTTP Basic Auth username" Type="Variable" Display="always" Required="false" Mask="false">opencode</Config>
   <Config Name="Timezone" Target="TZ" Default="UTC" Mode="" Description="Timezone" Type="Variable" Display="advanced-hide" Required="false" Mask="false">UTC</Config>
+  <Config Name="GitHub Token" Target="GITHUB_TOKEN" Default="" Mode="" Description="GitHub Personal Access Token (classic, repo scope) for git push/pull from inside the container" Type="Variable" Display="always" Required="false" Mask="true"></Config>
 </Container>
