@@ -3,7 +3,9 @@ FROM node:22-bookworm-slim
 # git/ssh: opencode shells out to git; ripgrep: used by opencode's search tool;
 # tini: reaps zombie processes / forwards signals correctly as PID 1;
 # python3/pip/venv, p7zip, jq, unzip/zip, sqlite3, nano/less/tree, procps:
-# general-purpose toolkit for agent-driven scripting/data work
+# general-purpose toolkit for agent-driven scripting/data work;
+# poppler-utils (pdftotext): clean text/table extraction from PDFs;
+# tesseract-ocr: OCR fallback for image-only PDFs with no text layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         ca-certificates \
@@ -24,6 +26,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         less \
         tree \
         procps \
+        poppler-utils \
+        tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
 # GitHub CLI - not in Debian's default repos, needs its own apt source

@@ -13,7 +13,9 @@ Base image is `node:22-bookworm-slim` (~200MB) rather than Alpine — opencode's
 prebuilt binaries have known issues on musl libc, so slim-Debian is the more
 reliable "lightweight" choice. No desktop app, no heavy build toolchain — just
 opencode plus a general-purpose CLI toolkit for agent-driven work: git, gh
-(GitHub CLI), ripgrep, python3/pip/venv, p7zip, jq, unzip/zip, sqlite3, and
+(GitHub CLI), ripgrep, python3/pip/venv, p7zip, jq, unzip/zip, sqlite3,
+poppler-utils (`pdftotext` — cleaner text/table extraction than fighting
+PDF.js output), tesseract-ocr (for image-only PDFs with no text layer), and
 basics like nano/less/tree. `pip install` works without extra flags —
 `PIP_BREAK_SYSTEM_PACKAGES=1` is set so opencode doesn't need to know about
 Debian's PEP 668 restriction to install packages.
