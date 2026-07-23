@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:4096]/</WebUI>
   <TemplateURL/>
   <Icon/>
-  <ExtraParams/>
+  <ExtraParams>--shm-size=256m</ExtraParams>
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>

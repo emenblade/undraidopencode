@@ -20,6 +20,18 @@ basics like nano/less/tree. `pip install` works without extra flags —
 `PIP_BREAK_SYSTEM_PACKAGES=1` is set so opencode doesn't need to know about
 Debian's PEP 668 restriction to install packages.
 
+One deliberate exception to "lightweight": `chromium` (plus `fonts-liberation`
+and `Pillow`, pinned to 12.3.0) is installed for headless web page rendering
+— screenshotting HTML to PNG, e.g. for a `render_previews.py`-style pipeline
+that runs a local `python3 -m http.server`, drives Chromium at it, and
+post-processes the screenshot with Pillow. Chromium is a genuinely large
+addition (call it +300-500MB) compared to everything else in this image —
+worth it for that capability, but if you never need page rendering it's a
+lot of image just sitting there. `shm_size: 256m` is set on the compose
+service (and `--shm-size=256m` via the Unraid template's ExtraParams) since
+Chromium in a container reliably crashes against Docker's default 64MB
+`/dev/shm` on anything but the most trivial pages.
+
 This setup assumes you're deploying to **Unraid** and reaching it by
 **WireGuard VPN into your home network** — so there's no Tailscale sidecar or
 public-facing reverse proxy here. Once you're on the VPN, your phone can just

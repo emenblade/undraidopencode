@@ -5,7 +5,11 @@ FROM node:22-bookworm-slim
 # python3/pip/venv, p7zip, jq, unzip/zip, sqlite3, nano/less/tree, procps:
 # general-purpose toolkit for agent-driven scripting/data work;
 # poppler-utils (pdftotext): clean text/table extraction from PDFs;
-# tesseract-ocr: OCR fallback for image-only PDFs with no text layer
+# tesseract-ocr: OCR fallback for image-only PDFs with no text layer;
+# chromium + fonts-liberation: headless rendering of web pages to screenshots
+# (Debian's chromium package pulls its own required shared libs automatically;
+# fonts-liberation is added explicitly since --no-install-recommends would
+# otherwise skip it, which would render text as missing glyphs/tofu boxes)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         ca-certificates \
@@ -28,7 +32,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         procps \
         poppler-utils \
         tesseract-ocr \
-    && rm -rf /var/lib/apt/lists/*
+        chromium \
+        fonts-liberation \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --break-system-packages Pillow==12.3.0
 
 # GitHub CLI - not in Debian's default repos, needs its own apt source
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
