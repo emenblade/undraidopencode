@@ -15,7 +15,9 @@ FROM node:22-bookworm-slim
 # postgresql-client/default-mysql-client/redis-tools: DB/cache CLIs so the
 # agent can inspect whatever a web project is actually talking to;
 # iputils-ping/dnsutils/iproute2: basic network debugging;
-# vim/rsync/imagemagick/httpie: general dev-environment utility
+# wget/tmux: simple download + terminal multiplexer for interactive/dev use;
+# fd-find/pipx: fast find alternative + isolated Python CLI app installer;
+# uv/ruff (pip): Astral's fast Python package manager and linter/formatter
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         ca-certificates \
@@ -52,8 +54,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         tesseract-ocr \
         chromium \
         fonts-liberation \
+        wget \
+        tmux \
+        fd-find \
+        pipx \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --break-system-packages Pillow==12.3.0
+    && pip install --break-system-packages Pillow==12.3.0 uv ruff
 
 # GitHub CLI - not in Debian's default repos, needs its own apt source
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
